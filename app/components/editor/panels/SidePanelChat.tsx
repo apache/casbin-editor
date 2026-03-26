@@ -50,7 +50,7 @@ const SidePanelChat = forwardRef<any, { onOpenChange?: (open: boolean) => void; 
       <div className={isOpen ? 'block h-full' : 'hidden'}>
         <div className="flex items-center justify-between p-4 border-b">
           <a href="https://casdoor.com" target="_blank" rel="noreferrer" className="inline-flex items-center">
-            <img src="https://casbin.org/img/casbin.svg" alt="help" className="h-5 w-5 mr-2" />
+            <img src="/favicon.png" alt="Casbin" className="h-5 w-5 mr-2 rounded-sm" />
             <div>AI Assistant</div>
           </a>
           <button onClick={toggleDrawer} className="text-gray-500 hover:text-gray-700">

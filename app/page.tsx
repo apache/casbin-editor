@@ -18,7 +18,7 @@ import { clsx } from 'clsx';
 import { useLang } from '@/app/context/LangContext';
 
 export default function Home() {
-  const { theme } = useLang();
+  const { theme, t } = useLang();
   return (
     <main
       className={clsx(
@@ -41,12 +41,16 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
           href="https://github.com/casbin/casbin-editor"
-          className="transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-md hover:shadow-xl"
+          className={clsx(
+            'inline-flex items-center gap-2 rounded-lg px-4 py-2 shadow-md transition-all hover:scale-105 hover:shadow-xl',
+            'bg-white/10 text-slate-100 hover:bg-white/15',
+          )}
         >
-          <img alt="GitHub stars" src="https://img.shields.io/github/stars/casbin/casbin-editor?style=social" />
+          <img src="/github.svg" alt="" aria-hidden="true" className="h-5 w-5 invert" />
+          <span className="text-sm font-medium">GitHub</span>
         </a>
         <span className="text-slate-300 text-sm font-medium">
-          Copyright © {new Date().getFullYear()} Casbin contributors.
+          {t('Copyright').replace('{year}', new Date().getFullYear().toString())}
         </span>
         <a
           target="_blank"
@@ -54,7 +58,7 @@ export default function Home() {
           href="https://discord.gg/S5UjpzGZjN"
           className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors duration-200"
         >
-          <img src="/discord.svg" alt="Discord" className="w-5 h-5 invert-[0.8]" />
+          <img src="/discord.svg" alt="" aria-hidden="true" className="w-5 h-5 invert-[0.8]" />
           <span className="text-sm font-medium">Casbin Discord</span>
         </a>
       </div>

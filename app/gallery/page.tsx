@@ -111,9 +111,9 @@ export default function GalleryPage() {
               <ArrowLeft className="w-6 h-6" />
             </button>
             <img
-              src="https://cdn.casbin.org/img/casbin_logo_1024x256.png"
-              alt="Casbin Logo"
-              className="h-8 w-auto"
+              src="/favicon.png"
+              alt="Casbin"
+              className="h-8 w-8 rounded-md"
             />
             <h1 className={clsx('text-3xl font-bold', textClass)}>
               {t('Model Gallery')}
@@ -313,12 +313,13 @@ export default function GalleryPage() {
           target="_blank"
           rel="noopener noreferrer"
           href="https://github.com/casbin/casbin-editor"
-          className="transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-md hover:shadow-xl"
+          className={clsx(
+            'inline-flex items-center gap-2 rounded-lg px-4 py-2 shadow-md transition-all hover:scale-105 hover:shadow-xl',
+            'bg-white/10 text-slate-100 hover:bg-white/15',
+          )}
         >
-          <img
-            alt="GitHub stars"
-            src="https://img.shields.io/github/stars/casbin/casbin-editor?style=social"
-          />
+          <img src="/github.svg" alt="" aria-hidden="true" className="h-5 w-5 invert" />
+          <span className="text-sm font-medium">GitHub</span>
         </a>
         <span className="text-slate-300 text-sm font-medium">
           {t('Copyright').replace('{year}', new Date().getFullYear().toString())}

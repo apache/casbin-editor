@@ -271,9 +271,9 @@ export const EditorScreen = () => {
           )}
         >
           <img
-            src="https://cdn.casbin.org/img/casbin_logo_1024x256.png"
-            alt="Casbin Logo"
-            className="h-8 w-auto"
+            src="/favicon.png"
+            alt="Casbin"
+            className="h-8 w-8 rounded-md"
           />
           <span className={clsx('text-xl font-semibold', textClass)}>{t('Policy Editor')}</span>
           <a
