@@ -18,7 +18,7 @@ It provides functionality such as syntax highlighting and code completion, just 
 Try it at either:
 
 1. **Apache Casbin Editor** (official ASF deployment): [https://casbin-editor.apache.org/](https://casbin-editor.apache.org/)
-2. Casbin website: [https://casbin.org/editor](https://casbin.org/editor)
+2. Apache Casbin website: [https://casbin.apache.org/editor](https://casbin.apache.org/editor)
 
 ## How it works?
 

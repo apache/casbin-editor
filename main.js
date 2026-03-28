@@ -28,7 +28,7 @@ const createWindow = () => {
 
   win.loadFile(path.join(__dirname, 'out/index.html')).catch((err) => {
     console.error('Failed to load local file:', err);
-    win.loadURL('http://editor.casbin.org');
+    win.loadURL('https://casbin-editor.apache.org/');
   });
 
   win.webContents.on('did-fail-load', async () => {
@@ -36,7 +36,7 @@ const createWindow = () => {
       await win.loadFile(path.join(__dirname, 'out/index.html'));
     } catch (err) {
       console.error('Retry loading local file failed:', err);
-      win.loadURL('http://editor.casbin.org');
+      win.loadURL('https://casbin-editor.apache.org/');
     }
   });
 };
