@@ -1,6 +1,6 @@
 {
   "name": "casbin-editor",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "homepage": "https://casbin-editor.apache.org/",
   "main": "main.js",
   "scripts": {
@@ -10,7 +10,6 @@
     "lint": "next lint",
     "electron": "electron .",
     "dist": "yarn build && electron-builder",
-    "release": "npx -p semantic-release -p @semantic-release/git -p @semantic-release/changelog -p @semantic-release/exec semantic-release",
     "test": "jest",
     "test:watch": "jest --watch",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
@@ -49,34 +48,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
-  },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/github",
-        {
-          "assets": [
-            {
-              "path": "dist/macos/*.dmg",
-              "label": "macOS"
-            },
-            {
-              "path": "dist/windows/*.exe",
-              "label": "Windows"
-            },
-            {
-              "path": "dist/linux/*.AppImage",
-              "label": "Linux"
-            }
-          ]
-        }
-      ]
-    ]
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.1",

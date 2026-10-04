@@ -1,82 +1,106 @@
-name: Build and Release Electron App
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+name: Release
+
+# Releases are manual: a release manager pushes a tag, and this workflow
+# publishes it. There is no automatic release on push to master.
+#
+#   v1.4.0-rc1  -> GitHub *pre-release* only (the source package to vote on)
+#   v1.4.0      -> GitHub release
+#
+# In both cases the release carries an Apache-style source package, which the
+# release manager downloads and signs locally before starting the vote. The
+# desktop builds are attached only as convenience binaries.
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
 
 jobs:
   build-macos:
     runs-on: macos-latest
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'feat:'))
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24.10.0'
-      - name: Install dependencies
-        run: yarn install
+      - name: Stamp version from tag
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          version="${version%-rc*}"
+          npm version "$version" --no-git-tag-version --allow-same-version
+      - run: yarn install
       - name: Build Electron app for macOS
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn dist --mac
-      - name: Upload macOS build artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: electron-app-macos
           path: dist/*.dmg
 
   build-windows:
     runs-on: windows-latest
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'feat:'))
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24.10.0'
-      - name: Install dependencies
-        run: yarn install
+      - name: Stamp version from tag
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          version="${version%-rc*}"
+          npm version "$version" --no-git-tag-version --allow-same-version
+      - run: yarn install
       - name: Build Electron app for Windows
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn dist --win
-      - name: Upload Windows build artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: electron-app-windows
           path: dist/*.exe
 
   build-linux:
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'feat:'))
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24.10.0'
-      - name: Install dependencies
-        run: yarn install
+      - name: Stamp version from tag
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          version="${version%-rc*}"
+          npm version "$version" --no-git-tag-version --allow-same-version
+      - run: yarn install
       - name: Build Electron app for Linux
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn dist --linux
-      - name: Upload Linux build artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: electron-app-linux
           path: dist/*.AppImage
@@ -84,31 +108,94 @@ jobs:
   release:
     needs: [build-macos, build-windows, build-linux]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: '24.10.0'
-      - name: Clear npm cache
-        run: npm cache clean --force
+          fetch-depth: 0
+
+      - name: Resolve version from tag
+        id: version
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+
+          # A -rcN suffix marks a candidate. The source package itself is always
+          # named after the final version, so the bits that are voted on are
+          # exactly the bits that get released.
+          if [[ "$version" =~ ^(.+)-rc[0-9]+$ ]]; then
+            prerelease=true
+            version="${BASH_REMATCH[1]}"
+          else
+            prerelease=false
+          fi
+
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '${tag}' is not of the form v<major>.<minor>.<patch>[-rc<n>]"
+            exit 1
+          fi
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+
+      - name: Build source package
+        id: package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          name="apache-casbin-editor-${VERSION}-incubating-src"
+          mtime="$(git log -1 --format=%cI "${{ steps.version.outputs.tag }}")"
+
+          # Built straight from the tagged tree, with the version stamped in. The
+          # tar and gzip flags keep the output byte-for-byte reproducible, so
+          # re-tagging the same commit as v1.4.0 yields the exact package voted
+          # on as v1.4.0-rc1.
+          rm -rf srcpkg && mkdir -p "srcpkg/${name}"
+          git archive --format=tar "${{ steps.version.outputs.tag }}" | tar -x -C "srcpkg/${name}"
+          node -e '
+            const fs = require("fs");
+            const f = process.argv[1];
+            const pkg = JSON.parse(fs.readFileSync(f, "utf8"));
+            pkg.version = process.env.VERSION;
+            fs.writeFileSync(f, JSON.stringify(pkg, null, 2) + "\n");
+          ' "srcpkg/${name}/package.json"
+
+          tar --sort=name --mtime="${mtime}" --owner=0 --group=0 --numeric-owner \
+            -cf - -C srcpkg "${name}" | gzip -n > "${name}.tar.gz"
+          sha512sum "${name}.tar.gz" > "${name}.tar.gz.sha512"
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+
       - name: Download macOS build artifacts
         uses: actions/download-artifact@v4
         with:
           name: electron-app-macos
           path: dist/macos
+
       - name: Download Windows build artifacts
         uses: actions/download-artifact@v4
         with:
           name: electron-app-windows
           path: dist/windows
+
       - name: Download Linux build artifacts
         uses: actions/download-artifact@v4
         with:
           name: electron-app-linux
           path: dist/linux
-      - name: Run semantic-release
+
+      - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn release
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes \
+            ${{ steps.version.outputs.prerelease == 'true' && '--prerelease' || '' }} \
+            "${{ steps.package.outputs.name }}.tar.gz" \
+            "${{ steps.package.outputs.name }}.tar.gz.sha512" \
+            dist/macos/* dist/windows/* dist/linux/*
