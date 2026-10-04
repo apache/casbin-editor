@@ -6,7 +6,7 @@ import { useLang } from '@/app/context/LangContext';
 import { useAutoCarousel } from '@/app/context/AutoCarouselContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/app/components/ui/tooltip';
 
-const ENDPOINTS = [DEFAULT_ENDPOINT, 'demo.casdoor.com'];
+const ENDPOINTS = [DEFAULT_ENDPOINT];
 
 export const EndpointSelector: React.FC = () => {
   const { t } = useLang();

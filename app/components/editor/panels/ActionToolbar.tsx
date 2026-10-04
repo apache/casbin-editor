@@ -3,8 +3,6 @@ import { useLang } from '@/app/context/LangContext';
 import { toast } from 'react-hot-toast';
 import type { EngineType } from '@/app/config/engineConfig';
 import type { ShareProps } from '@/app/components/hooks/useShareInfo';
-import { refreshEngines } from '@/app/components/hooks/useRemoteEnforcer';
-import { useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/app/components/ui/tooltip';
 
 interface ActionToolbarProps {
@@ -37,44 +35,6 @@ export const ActionToolbar = ({
   requestResult,
 }: ActionToolbarProps) => {
   const { t } = useLang();
-  const [showRefreshButton, setShowRefreshButton] = useState(false);
-  const [keyPressCount, setKeyPressCount] = useState(0);
-  const [lastKeyPressTime, setLastKeyPressTime] = useState(0);
-
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === '1') {
-        const currentTime = Date.now();
-        if (currentTime - lastKeyPressTime > 1000) {
-          setKeyPressCount(1);
-        } else {
-          setKeyPressCount((prev) => {return prev + 1});
-        }
-        setLastKeyPressTime(currentTime);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {return document.removeEventListener('keydown', handleKeyPress)};
-  }, [lastKeyPressTime]);
-
-  useEffect(() => {
-    if (keyPressCount === 3) {
-      setShowRefreshButton(true);
-      setKeyPressCount(0);
-    }
-  }, [keyPressCount]);
-
-  const handleRefreshEngines = async () => {
-    const toastId = toast.loading(t('Refreshing engines...'));
-    try {
-      await refreshEngines();
-      toast.success(t('Engines refreshed successfully'), { id: toastId });
-      setShowRefreshButton(false);
-    } catch (error) {
-      toast.error(t('Failed to refresh engines'), { id: toastId });
-    }
-  };
 
   const handleShareClick = () => {
     shareInfo({
@@ -183,11 +143,6 @@ export const ActionToolbar = ({
             <p>{t('Run test tooltip')}</p>
           </TooltipContent>
         </Tooltip>
-        {showRefreshButton && (
-          <button className={buttonClassName} onClick={handleRefreshEngines}>
-            {t('Refresh Engines')}
-          </button>
-        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <button className={buttonClassName} onClick={handleCopyClick}>

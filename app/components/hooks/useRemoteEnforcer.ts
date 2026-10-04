@@ -26,7 +26,8 @@ export interface VersionInfo {
   libVersion: string;
 }
 
-export const DEFAULT_ENDPOINT = 'door.casdoor.com';
+// Host of the casbin-editor-backend service (github.com/casbin/casbin-editor-backend).
+export const DEFAULT_ENDPOINT = 'cli.casnode.com';
 
 export const getEndpoint = () => {
   try {
@@ -36,91 +37,31 @@ export const getEndpoint = () => {
   }
 };
 
-async function generateIdentifierParam(params: Record<string, string> = {}): Promise<{ hash: string; timestamp: string }> {
-  const timestamp = new Date().toISOString();
-  const version = 'casbin-editor-v1';
-
-  let rawString = `${version}|${timestamp}`;
-
-  if (Object.keys(params).length > 0) {
-    const sortedParams = Object.keys(params)
-      .sort()
-      .map((key) => {
-        return `${key}=${params[key]}`;
-      })
-      .join('&');
-    rawString = `${rawString}|${sortedParams}`;
-  }
-
-  const msgBuffer = new TextEncoder().encode(rawString);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hash = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => {
-      return b.toString(16).padStart(2, '0');
-    })
-    .join('');
-
-  return {
-    hash,
-    timestamp,
-  };
-}
-
 export async function remoteEnforcer(props: RemoteEnforcerProps) {
   try {
-    const baseUrl = `https://${getEndpoint()}/api/run-casbin-command`;
-    const args = [
-      'enforceEx',
-      '-m',
-      props.model,
-      '-p',
-      props.policy,
-      ...props.request.split(',').map((item) => {
-        return item.trim();
-      }),
-    ];
-
-    const params = {
-      language: props.engine,
-      args: JSON.stringify(args),
-    };
-
-    const url = new URL(baseUrl);
-    const { hash, timestamp } = await generateIdentifierParam(params);
-    url.searchParams.set('language', params.language);
-    url.searchParams.set('args', params.args);
-    url.searchParams.set('m', hash);
-    url.searchParams.set('t', timestamp);
-
-    const response = await fetch(url.toString(), {
-      method: 'GET',
+    const response = await fetch(`https://${getEndpoint()}/api/enforce`, {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      body: JSON.stringify({
+        engine: props.engine,
+        model: props.model,
+        policy: props.policy,
+        request: props.request,
+      }),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
     const result = await response.json();
 
-    if (result.status !== 'ok') {
-      throw new Error(result.msg || 'API request failed');
-    }
-
-    let enforceResult;
-    const data = result.data.trim();
-
-    try {
-      enforceResult = JSON.parse(data);
-    } catch {
-      throw new Error(`Unexpected response format: ${data}`);
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP error! status: ${response.status}`);
     }
 
     return {
-      allowed: enforceResult.allow,
-      reason: enforceResult.explain ? enforceResult.explain : [],
+      allowed: result.allow,
+      reason: result.explain ? result.explain : [],
       error: null,
     };
   } catch (error) {
@@ -134,33 +75,19 @@ export async function remoteEnforcer(props: RemoteEnforcerProps) {
 
 export async function getRemoteVersion(language: Exclude<EngineType, 'node'>): Promise<VersionInfo> {
   try {
-    const baseUrl = `https://${getEndpoint()}/api/run-casbin-command`;
-
-    const params = {
-      language,
-      args: JSON.stringify(['--version']),
-    };
-
-    const url = new URL(baseUrl);
-    const { hash, timestamp } = await generateIdentifierParam(params);
-    url.searchParams.set('language', params.language);
-    url.searchParams.set('args', params.args);
-    url.searchParams.set('m', hash);
-    url.searchParams.set('t', timestamp);
+    const url = new URL(`https://${getEndpoint()}/api/version`);
+    url.searchParams.set('engine', language);
 
     const response = await fetch(url.toString());
     const result = await response.json();
-    const versionInfo = result.data as string;
-    const [cliLine, libLine] = versionInfo.trim().split('\n');
 
-    const getVersionNumber = (line: string) => {
-      const match = line.match(/(?:v|[\s])([\d.]+)/);
-      return match ? `v${match[1]}` : 'unknown';
-    };
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP error! status: ${response.status}`);
+    }
 
     return {
-      engineVersion: getVersionNumber(cliLine),
-      libVersion: getVersionNumber(libLine),
+      engineVersion: result.engineVersion || 'unknown',
+      libVersion: result.libVersion || 'unknown',
     };
   } catch (error) {
     console.error(`Error getting ${language} version:`, error);
@@ -168,38 +95,5 @@ export async function getRemoteVersion(language: Exclude<EngineType, 'node'>): P
       engineVersion: 'unknown',
       libVersion: 'unknown',
     };
-  }
-}
-
-export async function refreshEngines(): Promise<void> {
-  try {
-    const baseUrl = `https://${getEndpoint()}/api/refresh-engines`;
-    const url = new URL(baseUrl);
-
-    const { hash, timestamp } = await generateIdentifierParam();
-
-    url.searchParams.set('m', hash);
-    url.searchParams.set('t', timestamp);
-
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    if (result.status !== 'ok') {
-      throw new Error(result.msg || 'API request failed');
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error('Error refreshing engines:', error);
-    throw error;
   }
 }
