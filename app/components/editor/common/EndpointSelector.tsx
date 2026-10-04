@@ -1,7 +1,7 @@
 import React from 'react';
 import { clsx } from 'clsx';
 import { Link } from 'lucide-react';
-import { DEFAULT_ENDPOINT } from '@/app/components/hooks/useRemoteEnforcer';
+import { DEFAULT_ENDPOINT, getEndpoint } from '@/app/components/hooks/useRemoteEnforcer';
 import { useLang } from '@/app/context/LangContext';
 import { useAutoCarousel } from '@/app/context/AutoCarouselContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/app/components/ui/tooltip';
@@ -12,7 +12,7 @@ export const EndpointSelector: React.FC = () => {
   const { t } = useLang();
   const { disableAutoCarousel } = useAutoCarousel();
   const [isOpen, setIsOpen] = React.useState(false);
-  const storedEndpoint = window.localStorage.getItem('casbinEndpoint') || DEFAULT_ENDPOINT;
+  const storedEndpoint = getEndpoint();
   const [selectedEndpoint, setSelectedEndpoint] = React.useState(storedEndpoint);
   const [customEndpoint, setCustomEndpoint] = React.useState(ENDPOINTS.includes(storedEndpoint) ? '' : storedEndpoint);
   const dropdownRef = React.useRef<HTMLDivElement>(null);

@@ -29,9 +29,16 @@ export interface VersionInfo {
 // Host of the casbin-editor-backend service (github.com/casbin/casbin-editor-backend).
 export const DEFAULT_ENDPOINT = 'cli.casnode.com';
 
+// Endpoints saved by older versions; they no longer serve the editor.
+const LEGACY_ENDPOINTS = ['door.casdoor.com', 'demo.casdoor.com'];
+
 export const getEndpoint = () => {
   try {
-    return window?.localStorage?.getItem('casbinEndpoint') || DEFAULT_ENDPOINT;
+    const endpoint = window?.localStorage?.getItem('casbinEndpoint');
+    if (!endpoint || LEGACY_ENDPOINTS.includes(endpoint)) {
+      return DEFAULT_ENDPOINT;
+    }
+    return endpoint;
   } catch {
     return DEFAULT_ENDPOINT;
   }
