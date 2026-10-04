@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: Build and Deploy
+name: Build
 
 on:
   workflow_dispatch:
@@ -25,10 +25,10 @@ on:
   pull_request:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,16 +44,3 @@ jobs:
 
       - name: Build
         run: yarn build
-
-      - name: Add .asf.yaml to site output
-        if: github.event_name != 'pull_request'
-        run: cp .asf.yaml out/.asf.yaml
-
-      - name: Publish to asf-site
-        if: github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
-          publish_branch: asf-site
-          force_orphan: true

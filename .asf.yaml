@@ -17,7 +17,7 @@
 
 github:
   description: "Apache Casbin Editor"
-  homepage: https://casbin-editor.apache.org/
+  homepage: https://editor.casbin.org/
   features:
     issues: true
     projects: false
@@ -31,10 +31,6 @@ github:
   protected_branches:
     # prevent accidentially deleted
     master: {}
-
-publish:
-  whoami: asf-site
-  hostname: casbin-editor.apache.org
 
 notifications:
   commits:      commits@casbin.apache.org

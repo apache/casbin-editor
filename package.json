@@ -1,7 +1,7 @@
 {
   "name": "casbin-editor",
   "version": "0.0.0",
-  "homepage": "https://casbin-editor.apache.org/",
+  "homepage": "https://editor.casbin.org/",
   "main": "main.js",
   "scripts": {
     "dev": "next dev",
