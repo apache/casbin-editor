@@ -17,8 +17,9 @@
     "start": "npx serve@latest out",
     "lint": "next lint",
     "electron": "electron .",
-    "dist": "yarn build && electron-builder",
-    "test": "jest",
+    "dist": "yarn build && electron-builder --publish never",
+    "test": "jest --testPathIgnorePatterns casbinEngine.test.ts",
+    "test:integration": "jest --runTestsByPath test/casbinEngine.test.ts",
     "test:watch": "jest --watch",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
   },

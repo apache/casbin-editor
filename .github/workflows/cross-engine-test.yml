@@ -1,20 +1,14 @@
 name: Casbin Cross-Engine Tests
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'feat:'))
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -25,7 +19,7 @@ jobs:
           node-version: '22.x'
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Run tests
-        run: yarn test 
+        run: yarn test:integration

@@ -69,3 +69,9 @@ yarn dist
 ```
 
 If the packaged app cannot load the local `out/` bundle, it falls back to loading **https://editor.casbin.org/** in the window.
+
+## Release preparation
+
+See [RELEASING.md](RELEASING.md) for source candidates, independent approval and
+promotion of the signed originals. A workflow artifact or historical GitHub
+download is not evidence of approval for a new Apache release.
