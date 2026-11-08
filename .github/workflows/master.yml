@@ -40,7 +40,17 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
+
+      - name: Local tests
+        run: yarn test --runInBand
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Source packaging regression tests
+        run: python -m unittest discover -s test -p 'release_source_test.py'
 
       - name: Build
         run: yarn build
