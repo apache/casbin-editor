@@ -1,4 +1,6 @@
 import { createRequire } from 'module';
+import fs from 'node:fs';
+import path from 'node:path';
 const require = createRequire(import.meta.url);
 const casbinVersion = require('./node_modules/casbin/package.json').version;
 
@@ -36,6 +38,29 @@ const nextConfig = {
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       config.resolve.fallback = { fs: false, ...config.resolve.fallback };
+      config.plugins.push({
+        apply(compiler) {
+          compiler.hooks.done.tap('BrowserLicenseInventory', (stats) => {
+            const resources = new Set();
+            const visit = (module) => {
+              if (module.resource) {
+                resources.add(module.resource.split('?')[0]);
+              }
+              for (const child of module.modules || []) {
+                visit(child);
+              }
+            };
+            for (const module of stats.compilation.modules) {
+              if (stats.compilation.chunkGraph.getNumberOfModuleChunks(module) > 0) {
+                visit(module);
+              }
+            }
+            const destination = path.join(process.cwd(), '.next', 'browser-modules.json');
+            fs.mkdirSync(path.dirname(destination), { recursive: true });
+            fs.writeFileSync(destination, JSON.stringify([...resources].sort(), null, 2));
+          });
+        },
+      });
     }
 
     config.plugins.push(

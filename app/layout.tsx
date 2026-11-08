@@ -18,8 +18,8 @@ import { LangProvider } from './context/LangContext';
 import { AutoCarouselProvider } from './context/AutoCarouselContext';
 
 export const metadata: Metadata = {
-  title: 'Casbin Policy Editor',
-  description: 'web playground for casbin',
+  title: 'Apache Casbin Editor (Incubating)',
+  description: 'Apache Casbin (Incubating) model and policy editor',
 };
 
 export default function RootLayout({
@@ -32,6 +32,20 @@ export default function RootLayout({
       <body>
         <LangProvider>
           <AutoCarouselProvider>{children}</AutoCarouselProvider>
+          <footer className="px-4 py-2 text-center text-xs text-slate-500">
+            Apache Casbin is an effort undergoing incubation at The Apache Software Foundation (ASF),
+            sponsored by the Apache Incubator. Incubation is required of all newly accepted projects
+            until a further review indicates that the infrastructure, communications, and decision
+            making process have stabilized in a manner consistent with other successful ASF projects.
+            While incubation status is not necessarily a reflection of the completeness or stability
+            of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+            <p className="mt-1">
+              Gopher artwork based on work by{' '}
+              <a href="https://go.dev/blog/gopher" className="underline">Renee French</a>{' '}
+              (<a href="https://creativecommons.org/licenses/by/4.0/" className="underline">CC BY 4.0</a>),
+              adapted by the Casbin community.
+            </p>
+          </footer>
         </LangProvider>
       </body>
     </html>
