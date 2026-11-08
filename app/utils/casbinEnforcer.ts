@@ -1,5 +1,5 @@
 import { Enforcer, DefaultRoleManager, Util as CasbinUtil } from 'casbin';
-import { newEnforceContext } from '@/app/components/hooks/useSetupEnforceContext';
+import { defaultEnforceContextData, newEnforceContext } from '@/app/components/hooks/useSetupEnforceContext';
 import { parseABACRequest } from '@/app/utils/casbinRequestParser';
 
 /**
@@ -87,7 +87,7 @@ export function setupRoleManager(enforcer: Enforcer): void {
 export async function processRequests(
   request: string,
   enforcer: any,
-  enforceContextData: Map<string, string> = new Map<string, string>(),
+  enforceContextData: Map<string, string> = new Map(defaultEnforceContextData),
 ): Promise<{ request: string; okEx: boolean; reason: string[] }[]> {
   const requests = request.split('\n').filter((line) => {
     return line.trim();
