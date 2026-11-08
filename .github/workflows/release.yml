@@ -15,187 +15,49 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: Release
+name: Source candidate
 
-# Releases are manual: a release manager pushes a tag, and this workflow
-# publishes it. There is no automatic release on push to master.
-#
-#   v1.4.0-rc1  -> GitHub *pre-release* only (the source package to vote on)
-#   v1.4.0      -> GitHub release
-#
-# In both cases the release carries an Apache-style source package, which the
-# release manager downloads and signs locally before starting the vote. The
-# desktop builds are attached only as convenience binaries.
-
+# Tagging creates unsigned review material only. Approved originals are signed,
+# staged, voted on and promoted by the release manager; see RELEASING.md.
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*-rc[0-9]*'
 
 permissions:
   contents: read
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.10.0'
-      - name: Stamp version from tag
-        shell: bash
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          version="${version%-rc*}"
-          npm version "$version" --no-git-tag-version --allow-same-version
-      - run: yarn install
-      - name: Build Electron app for macOS
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn dist --mac
-      - uses: actions/upload-artifact@v4
-        with:
-          name: electron-app-macos
-          path: dist/*.dmg
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.10.0'
-      - name: Stamp version from tag
-        shell: bash
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          version="${version%-rc*}"
-          npm version "$version" --no-git-tag-version --allow-same-version
-      - run: yarn install
-      - name: Build Electron app for Windows
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn dist --win
-      - uses: actions/upload-artifact@v4
-        with:
-          name: electron-app-windows
-          path: dist/*.exe
-
-  build-linux:
+  source:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.10.0'
-      - name: Stamp version from tag
-        shell: bash
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          version="${version%-rc*}"
-          npm version "$version" --no-git-tag-version --allow-same-version
-      - run: yarn install
-      - name: Build Electron app for Linux
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn dist --linux
-      - uses: actions/upload-artifact@v4
-        with:
-          name: electron-app-linux
-          path: dist/*.AppImage
-
-  release:
-    needs: [build-macos, build-windows, build-linux]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Resolve version from tag
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate candidate tag
         id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        shell: bash
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME}"
-          version="${tag#v}"
-
-          # A -rcN suffix marks a candidate. The source package itself is always
-          # named after the final version, so the bits that are voted on are
-          # exactly the bits that get released.
-          if [[ "$version" =~ ^(.+)-rc[0-9]+$ ]]; then
-            prerelease=true
-            version="${BASH_REMATCH[1]}"
-          else
-            prerelease=false
-          fi
-
-          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Tag '${tag}' is not of the form v<major>.<minor>.<patch>[-rc<n>]"
+          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)-rc([1-9][0-9]*)$ ]]; then
+            echo 'Invalid release candidate tag' >&2
             exit 1
           fi
-
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
-
-      - name: Build source package
-        id: package
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+      - name: Run source packaging regression tests
+        run: python -m unittest discover -s test -p 'release_source_test.py'
+      - name: Make unsigned source candidate
         env:
           VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          name="apache-casbin-editor-${VERSION}-incubating-src"
-          mtime="$(git log -1 --format=%cI "${{ steps.version.outputs.tag }}")"
-
-          # Built straight from the tagged tree, with the version stamped in. The
-          # tar and gzip flags keep the output byte-for-byte reproducible, so
-          # re-tagging the same commit as v1.4.0 yields the exact package voted
-          # on as v1.4.0-rc1.
-          rm -rf srcpkg && mkdir -p "srcpkg/${name}"
-          git archive --format=tar "${{ steps.version.outputs.tag }}" | tar -x -C "srcpkg/${name}"
-          node -e '
-            const fs = require("fs");
-            const f = process.argv[1];
-            const pkg = JSON.parse(fs.readFileSync(f, "utf8"));
-            pkg.version = process.env.VERSION;
-            fs.writeFileSync(f, JSON.stringify(pkg, null, 2) + "\n");
-          ' "srcpkg/${name}/package.json"
-
-          tar --sort=name --mtime="${mtime}" --owner=0 --group=0 --numeric-owner \
-            -cf - -C srcpkg "${name}" | gzip -n > "${name}.tar.gz"
-          sha512sum "${name}.tar.gz" > "${name}.tar.gz.sha512"
-          echo "name=${name}" >> "$GITHUB_OUTPUT"
-
-      - name: Download macOS build artifacts
-        uses: actions/download-artifact@v4
+          TAG: ${{ github.ref_name }}
+        run: python scripts/release_source.py prepare --ref "$TAG" --version "$VERSION"
+      - uses: actions/upload-artifact@v4
         with:
-          name: electron-app-macos
-          path: dist/macos
-
-      - name: Download Windows build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: electron-app-windows
-          path: dist/windows
-
-      - name: Download Linux build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: electron-app-linux
-          path: dist/linux
-
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "${{ steps.version.outputs.tag }}" \
-            --generate-notes \
-            ${{ steps.version.outputs.prerelease == 'true' && '--prerelease' || '' }} \
-            "${{ steps.package.outputs.name }}.tar.gz" \
-            "${{ steps.package.outputs.name }}.tar.gz.sha512" \
-            dist/macos/* dist/windows/* dist/linux/*
+          name: unsigned-source-candidate
+          path: source-dist/*
+          if-no-files-found: error

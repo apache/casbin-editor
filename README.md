@@ -61,7 +61,9 @@ Open browser: http://localhost:3000/
 
 ## For Electron
 
-This project supports being built as an Electron app:
+This project supports being built locally as an Electron app. The standard
+Electron bundle includes LGPL-licensed FFmpeg and must not be uploaded as an
+ASF convenience binary; see [RELEASING.md](RELEASING.md).
 
 ```shell
 yarn install
@@ -69,3 +71,9 @@ yarn dist
 ```
 
 If the packaged app cannot load the local `out/` bundle, it falls back to loading **https://editor.casbin.org/** in the window.
+
+## Release preparation
+
+See [RELEASING.md](RELEASING.md) for source candidates, independent approval and
+promotion of the signed originals. A workflow artifact or historical GitHub
+download is not evidence of approval for a new Apache release.

@@ -43,3 +43,7 @@ next-env.d.ts
 /screenshots
 
 package-lock.json
+
+# local release checks
+__pycache__/
+/source-dist/
