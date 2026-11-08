@@ -52,7 +52,18 @@ the Electron development dependency. CI uses Node.js 22.
    Include the full DISCLAIMER, official source and verification links, and the
    project/IPMC result URLs in the release description.
 
-Electron builds must use a fresh extraction of the approved source, the frozen
+The standard Electron distribution includes `ffmpeg.dll` (or its platform
+equivalent), whose bundled Chromium license identifies FFmpeg as LGPL-2.1+.
+The [ASF third-party policy](https://www.apache.org/legal/resolved.html#category-x)
+prohibits distributing Category X components in ASF convenience binaries.
+Keeping the Electron/Chromium license files does not resolve that restriction.
+Do not upload the standard Electron bundle as an Apache release asset. Local
+desktop builds remain available; the web application does not require Electron.
+An ASF desktop distribution needs a reviewed compatible runtime/build and its
+actual component inventory before it can proceed. Do not assume that removing
+one DLL produces a working or license-compliant Electron runtime.
+
+Any future approved Electron builds must use a fresh extraction of the approved source, the frozen
 lock and the committed version. Verify the packaged source correspondence,
 browser dependency license texts, Electron/Chromium licenses, DISCLAIMER and
 NOTICE before adding convenience binaries. Do not publish from electron-builder:

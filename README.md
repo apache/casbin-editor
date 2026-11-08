@@ -61,7 +61,9 @@ Open browser: http://localhost:3000/
 
 ## For Electron
 
-This project supports being built as an Electron app:
+This project supports being built locally as an Electron app. The standard
+Electron bundle includes LGPL-licensed FFmpeg and must not be uploaded as an
+ASF convenience binary; see [RELEASING.md](RELEASING.md).
 
 ```shell
 yarn install
