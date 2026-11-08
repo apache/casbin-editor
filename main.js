@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const { app, BrowserWindow, protocol } = require('electron');
+const { app, BrowserWindow, protocol, net } = require('electron');
 const path = require('path');
+const { pathToFileURL } = require('url');
+const { getExportedFile } = require('./desktopPaths');
 
-protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }]);
+protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true, supportFetchAPI: true } }]);
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -26,22 +28,20 @@ const createWindow = () => {
     },
   });
 
-  win.loadFile(path.join(__dirname, 'out/index.html')).catch((err) => {
+  win.loadURL('app://editor/').catch((err) => {
     console.error('Failed to load local file:', err);
     win.loadURL('https://editor.casbin.org/');
-  });
-
-  win.webContents.on('did-fail-load', async () => {
-    try {
-      await win.loadFile(path.join(__dirname, 'out/index.html'));
-    } catch (err) {
-      console.error('Retry loading local file failed:', err);
-      win.loadURL('https://editor.casbin.org/');
-    }
   });
 };
 
 app.whenReady().then(() => {
+  protocol.handle('app', (request) => {
+    const file = getExportedFile(request.url, path.join(__dirname, 'out'));
+    if (!file) {
+      return new Response('Not found', { status: 404 });
+    }
+    return net.fetch(pathToFileURL(file).toString());
+  });
   createWindow();
 });
 
