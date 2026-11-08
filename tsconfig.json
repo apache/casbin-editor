@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "ES2017",
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
