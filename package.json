@@ -1,11 +1,19 @@
 {
   "name": "casbin-editor",
-  "version": "0.0.0",
+  "version": "1.101.0",
+  "private": true,
+  "description": "Apache Casbin Editor (Incubating), a web-based model and policy editor",
+  "license": "Apache-2.0",
+  "author": "Apache Casbin <dev@casbin.apache.org>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/casbin-editor.git"
+  },
   "homepage": "https://editor.casbin.org/",
   "main": "main.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/browser_licenses.cjs",
     "start": "npx serve@latest out",
     "lint": "next lint",
     "electron": "electron .",
@@ -16,6 +24,8 @@
   },
   "build": {
     "appId": "org.casbin.editor",
+    "productName": "Apache Casbin Editor (Incubating)",
+    "artifactName": "apache-casbin-editor-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -23,11 +33,12 @@
       "main.js",
       "preload.js",
       "out/**/*",
-      "public/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      "assets"
+      "!node_modules/**/*",
+      "package.json",
+      "LICENSE",
+      "NOTICE",
+      "DISCLAIMER",
+      "licenses/**/*"
     ],
     "mac": {
       "identity": null,
@@ -39,7 +50,7 @@
         "deb"
       ],
       "category": "Utility",
-      "maintainer": "org.casbin.editor"
+      "maintainer": "Apache Casbin <dev@casbin.apache.org>"
     },
     "win": {
       "target": "nsis"

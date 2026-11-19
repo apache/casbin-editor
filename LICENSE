@@ -199,3 +199,20 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+Third-party material included in this source distribution:
+
+app/components/ui/sheet.tsx, app/components/ui/tooltip.tsx and
+app/utils/lib/utils.ts are adapted from shadcn/ui, Copyright (c) 2023 shadcn,
+under the MIT License. See licenses/shadcn-MIT.txt.
+
+The SVG icons in public/ (LanguageSwitching, compareEngines, discord, github,
+modelGallery, moon, openai and sun) are derived from lucide-react 0.473.0.
+Lucide is under the ISC License with retained Feather MIT attribution.
+See licenses/lucide.txt.
+
+app/icon.png and public/favicon.png are Casbin adaptations of the Go gopher
+artwork by Renee French, with a shield and check mark. The original gopher
+artwork is available under Creative Commons Attribution 4.0 International.
+See https://go.dev/blog/gopher and licenses/CC-BY-4.0.txt for the terms.
+These binary artwork files are not licensed solely under Apache-2.0.

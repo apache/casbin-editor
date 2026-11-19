@@ -1,0 +1,31 @@
+{
+  "@uiw/codemirror-extensions-basic-setup@4.25.12": {
+    "file": "licenses/uiw-4.25.12-MIT.txt",
+    "source": "https://github.com/uiwjs/react-codemirror/blob/v4.25.12/LICENSE"
+  },
+  "@uiw/codemirror-theme-monokai@4.25.12": {
+    "file": "licenses/uiw-4.25.12-MIT.txt",
+    "source": "https://github.com/uiwjs/react-codemirror/blob/v4.25.12/LICENSE"
+  },
+  "@uiw/codemirror-themes@4.25.12": {
+    "file": "licenses/uiw-4.25.12-MIT.txt",
+    "source": "https://github.com/uiwjs/react-codemirror/blob/v4.25.12/LICENSE"
+  },
+  "@uiw/react-codemirror@4.25.12": {
+    "file": "licenses/uiw-4.25.12-MIT.txt",
+    "source": "https://github.com/uiwjs/react-codemirror/blob/v4.25.12/LICENSE"
+  },
+  "react-resizable-panels@3.0.6": {
+    "file": "licenses/react-resizable-panels-3.0.6-MIT.txt",
+    "source": "https://github.com/bvaughn/react-resizable-panels/blob/43a071df6bb96d54e8b81a6be0e2d453af45cc4b/LICENSE"
+  },
+  "react-remove-scroll-bar@2.3.8": {
+    "file": "licenses/react-remove-scroll-bar-MIT.txt",
+    "source": "https://github.com/theKashey/react-remove-scroll-bar/blob/8ca9ba5ea52de03308fe8ced94f7b159a44d28ff/LICENSE"
+  },
+  "casbin@5.51.1": {
+    "file": "licenses/node-ip-1.1.5-MIT.txt",
+    "source": "https://www.npmjs.com/package/ip/v/1.1.5",
+    "note": "Original node-ip MIT terms from ip@1.1.5 README; retained for the adapted IP implementation in addition to the casbin Apache license."
+  }
+}
