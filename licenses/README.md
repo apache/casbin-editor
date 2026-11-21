@@ -31,13 +31,6 @@ moon, sparkles and sun, respectively. Their ISC and Feather MIT terms are in
 permission text is also available in https://github.com/feathericons/feather/blob/v4.29.2/LICENSE.
 These replace the previous icons whose origin was not recorded.
 
-The identical `app/icon.png` and `public/favicon.png` are the Casbin project
-favicon introduced in commit f6ba93d91ae3586f19b2c90599cfbaa9bf76b5a1 (2019-11-17),
-retained as binary project artwork. They depict an adaptation of the Go gopher.
-The original gopher is by Renee French under CC BY 4.0 (see the Go project's
-https://go.dev/blog/gopher and `CC-BY-4.0.txt`). Casbin adds the shield/check mark.
-The source LICENSE/NOTICE and rendered footer retain this attribution.
-
 Dependencies downloaded during a build are not bundled with the source archive.
 The production build inventories actual browser module inputs, retains their
 license and NOTICE files under `out/third-party-licenses/`, and copies this

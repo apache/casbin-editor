@@ -42,12 +42,6 @@ export default function RootLayout({
             making process have stabilized in a manner consistent with other successful ASF projects.
             While incubation status is not necessarily a reflection of the completeness or stability
             of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
-            <p className="mt-1">
-              Gopher artwork based on work by{' '}
-              <a href="https://go.dev/blog/gopher" className="underline">Renee French</a>{' '}
-              (<a href="https://creativecommons.org/licenses/by/4.0/" className="underline">CC BY 4.0</a>),
-              adapted by the Casbin community.
-            </p>
           </footer>
         </LangProvider>
       </body>
